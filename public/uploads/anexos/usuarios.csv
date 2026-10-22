@@ -1,0 +1,9 @@
+nome,nome_usuario,email,senha,imagem_usuario,tipo
+Bulma Briefs,bulma,bulma@streamflix.com,Bulma@123,bulma.png,administrador
+Mestre Kame,mestrekame,mestrekame@streamflix.com,Kame@123,mestrekame.png,administrador
+Son Goku,goku,goku@email.com,Goku@123,goku.png,usuario
+Vegeta,vegeta,vegeta@email.com,Vegeta@123,vegeta.png,usuario
+Son Gohan,gohan,gohan@email.com,Gohan@123,gohan.png,usuario
+Piccolo,piccolo,piccolo@email.com,Piccolo@123,piccolo.png,usuario
+Kuririn,kuririn,kuririn@email.com,Kuririn@123,kuririn.png,usuario
+Android 18,A18,a18@email.com,A18@123,a18.png,usuario
