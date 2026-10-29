@@ -67,40 +67,49 @@ app.post('/api/login', async (req, res) => {
 
 // Todos os filmes, ou só os de um admin com ?administrador=curador1 (precisa logar)
 app.get('/api/filmes', async (req, res) => {
-  const usuario = pegarSessao(req);
-  const params = [usuario ? usuario.id_usuario : null];
-  let filtro = '';
-  const busca = (req.query.administrador || '').trim().replace('@', '');
+  try {
+    const usuario = pegarSessao(req);
+    const params = [usuario ? usuario.id_usuario : null];
+    let filtro = '';
+    const busca = (req.query.administrador || '').trim().replace('@', '');
 
-  if (busca) {
-    if (!usuario) return res.status(401).json({ erro: 'Faça login' });
-    const admin = await pool.query(
-      `SELECT id_usuario FROM tb_usuario
-       WHERE nome_usuario = $1 AND tipo = 'administrador'`,
-      [busca],
-    );
-    if (admin.rows.length === 0) {
-      return res.status(404).json({ erro: 'Administrador não encontrado' });
+    if (busca) {
+      if (!usuario) return res.status(401).json({ erro: 'Faça login' });
+
+      const admin = await pool.query(
+        `SELECT id_usuario FROM tb_usuario
+         WHERE nome_usuario = $1 AND tipo = 'administrador'`,
+        [busca],
+      );
+
+      if (admin.rows.length === 0) {
+        return res.status(404).json({ erro: 'Administrador não encontrado' });
+      }
+
+      params.push(admin.rows[0].id_usuario);
+      filtro = 'WHERE f.id_usuario = $2';
     }
-    params.push(admin.rows[0].id_usuario);
-    filtro = 'WHERE f.id_usuario = $2';
-  }
 
-  const r = await pool.query(
-    `SELECT f.id_filme, f.titulo_filme, f.genero, f.url_capa,
-            u.nome_usuario AS administrador_usuario,
-            (SELECT COUNT(*) FROM tb_curtida c
-              WHERE c.id_filme = f.id_filme)::int AS curtidas,
-            EXISTS (SELECT 1 FROM tb_curtida cm
-              WHERE cm.id_filme = f.id_filme AND cm.id_usuario = $1
-            ) AS curtido_por_mim
-     FROM tb_filme f
-     JOIN tb_usuario u ON u.id_usuario = f.id_usuario
-     ${filtro}
-     ORDER BY f.id_filme DESC`,
-    params,
-  );
-  res.json(r.rows);
+    const r = await pool.query(
+      `SELECT f.id_filme, f.titulo_filme, f.genero, f.url_capa,
+              u.nome_usuario AS administrador_usuario,
+              (SELECT COUNT(*) FROM tb_curtida c
+                WHERE c.id_filme = f.id_filme)::int AS curtidas,
+              EXISTS (SELECT 1 FROM tb_curtida cm
+                WHERE cm.id_filme = f.id_filme AND cm.id_usuario = $1
+              ) AS curtido_por_mim
+       FROM tb_filme f
+       JOIN tb_usuario u ON u.id_usuario = f.id_usuario
+       ${filtro}
+       ORDER BY f.id_filme DESC`,
+      params,
+    );
+
+    res.json(r.rows);
+  } catch (erro) {
+    console.error('Erro ao buscar filmes:', erro);
+    res.status(500).json({ erro: 'Erro interno ao buscar filmes no banco de dados' });
+  }
 });
 
 app.post(
