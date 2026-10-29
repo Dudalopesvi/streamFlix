@@ -8,14 +8,17 @@ const app = express();
 app.use(express.json());
 app.use(express.static('public'));
 
+// Configuração do banco usando variáveis de ambiente (com fallback para local)
 const pool = new Pool({
-  user: 'postgres',
-  password: 'senai',
-  host: 'localhost',
-  port: 5432,
-  database: 'streamFlix',
+  user: process.env.PGUSER || 'postgres',
+  password: process.env.PGPASSWORD || 'senai',
+  host: process.env.PGHOST || 'localhost',
+  port: process.env.PGPORT || 5432,
+  database: process.env.PGDATABASE || 'streamFlix',
+  ssl: process.env.PGHOST ? { rejectUnauthorized: false } : false, // Necessário para bancos na nuvem (Supabase, Render, Neon)
 });
 
+// Multer configurado em memória (sem gravar no disco)
 const upload = multer({
   storage: multer.memoryStorage(),
   fileFilter: (req, file, cb) => {
@@ -112,10 +115,13 @@ app.post(
       });
     }
 
+    // Converte a imagem enviada em memória para Base64 Data URL
+    const urlCapa = `data:${req.file.mimetype};base64,${req.file.buffer.toString('base64')}`;
+
     const r = await pool.query(
       `INSERT INTO tb_filme (titulo_filme, genero, url_capa, id_usuario)
        VALUES ($1, $2, $3, $4) RETURNING *`,
-      [titulo_filme, genero, req.file.filename, req.usuario.id_usuario],
+      [titulo_filme, genero, urlCapa, req.usuario.id_usuario],
     );
     res.status(201).json(r.rows[0]);
   },
@@ -185,4 +191,10 @@ app.get('/api/perfil', logado, async (req, res) => {
   });
 });
 
-app.listen(3000, () => console.log('Servidor rodando em http://localhost:3000'));
+// Executa localmente
+if (process.env.NODE_ENV !== 'production') {
+  app.listen(3000, () => console.log('Servidor rodando em http://localhost:3000'));
+}
+
+// Exporta a aplicação para o Vercel
+module.exports = app;
