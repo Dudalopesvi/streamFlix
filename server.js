@@ -9,14 +9,24 @@ app.use(express.json());
 app.use(express.static('public'));
 
 // Configuração do banco usando variáveis de ambiente (com fallback para local)
-const pool = new Pool({
-  user: process.env.PGUSER || 'postgres',
-  password: process.env.PGPASSWORD || 'senai',
-  host: process.env.PGHOST || 'localhost',
-  port: process.env.PGPORT || 5432,
-  database: process.env.PGDATABASE || 'streamFlix',
-  ssl: process.env.PGHOST ? { rejectUnauthorized: false } : false, // Necessário para bancos na nuvem (Supabase, Render, Neon)
-});
+const connectionString = process.env.DATABASE_URL || process.env.POSTGRES_URL;
+
+const pool = new Pool(
+  connectionString
+    ? {
+        connectionString,
+        ssl: { rejectUnauthorized: false },
+        max: 1, // serverless: cada instância segura poucas conexões
+      }
+    : {
+        user: process.env.PGUSER || 'postgres',
+        password: process.env.PGPASSWORD || 'senai',
+        host: process.env.PGHOST || 'localhost',
+        port: process.env.PGPORT || 5432,
+        database: process.env.PGDATABASE || 'streamFlix',
+        ssl: process.env.PGHOST ? { rejectUnauthorized: false } : false,
+      },
+);
 
 // Multer configurado em memória (sem gravar no disco)
 const upload = multer({
