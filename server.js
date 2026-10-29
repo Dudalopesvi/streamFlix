@@ -203,8 +203,11 @@ app.get('/api/perfil', logado, async (req, res) => {
 // Servir arquivos estáticos da pasta public usando o diretório raiz de execução
 app.use(express.static(path.join(process.cwd(), 'public')));
 
-// Rota de fallback atualizada para o Express 5
-app.get('(.*)', (req, res) => {
+// Servir arquivos estáticos da pasta public
+app.use(express.static(path.join(process.cwd(), 'public')));
+
+// Rota de fallback usando Expressão Regular (evita erros do path-to-regexp)
+app.get(/.*/, (req, res) => {
   const indexPath = path.join(process.cwd(), 'public', 'index.html');
   res.sendFile(indexPath, (err) => {
     if (err) {
@@ -217,5 +220,7 @@ app.get('(.*)', (req, res) => {
 if (process.env.NODE_ENV !== 'production') {
   app.listen(3000, () => console.log('Servidor rodando em http://localhost:3000'));
 }
+
+module.exports = app;
 
 module.exports = app;
