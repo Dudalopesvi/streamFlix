@@ -191,6 +191,18 @@ app.get('/api/perfil', logado, async (req, res) => {
   });
 });
 
+// Servir o arquivo index.html do front-end para qualquer rota que não seja /api
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
+
+// Executa localmente
+if (process.env.NODE_ENV !== 'production') {
+  app.listen(3000, () => console.log('Servidor rodando em http://localhost:3000'));
+}
+
+module.exports = app;
+
 // Executa localmente
 if (process.env.NODE_ENV !== 'production') {
   app.listen(3000, () => console.log('Servidor rodando em http://localhost:3000'));
