@@ -203,8 +203,8 @@ app.get('/api/perfil', logado, async (req, res) => {
 // Servir arquivos estáticos da pasta public usando o diretório raiz de execução
 app.use(express.static(path.join(process.cwd(), 'public')));
 
-// Rota de fallback com tratamento de erro visível
-app.get('*', (req, res) => {
+// Rota de fallback atualizada para o Express 5
+app.get('(.*)', (req, res) => {
   const indexPath = path.join(process.cwd(), 'public', 'index.html');
   res.sendFile(indexPath, (err) => {
     if (err) {
