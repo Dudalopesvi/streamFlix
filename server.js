@@ -191,12 +191,17 @@ app.get('/api/perfil', logado, async (req, res) => {
   });
 });
 
-// Servir arquivos estáticos da pasta public
-app.use(express.static(path.join(__dirname, 'public')));
+// Servir arquivos estáticos da pasta public usando o diretório raiz de execução
+app.use(express.static(path.join(process.cwd(), 'public')));
 
-// Rota de fallback para entregar o index.html nas rotas do front
+// Rota de fallback com tratamento de erro visível
 app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+  const indexPath = path.join(process.cwd(), 'public', 'index.html');
+  res.sendFile(indexPath, (err) => {
+    if (err) {
+      res.status(500).send(`Erro ao carregar interface: ${err.message}. Caminho buscado: ${indexPath}`);
+    }
+  });
 });
 
 // Executa localmente
