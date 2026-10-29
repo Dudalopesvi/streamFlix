@@ -17,11 +17,7 @@ const pool = new Pool({
 });
 
 const upload = multer({
-  storage: multer.diskStorage({
-    destination: 'public/uploads/capas',
-    filename: (req, file, cb) =>
-      cb(null, Date.now() + path.extname(file.originalname)),
-  }),
+  storage: multer.memoryStorage(),
   fileFilter: (req, file, cb) => {
     const ext = path.extname(file.originalname).toLowerCase();
     cb(null, ['.jpg', '.jpeg', '.png', '.gif', '.webp'].includes(ext));
