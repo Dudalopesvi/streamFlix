@@ -130,17 +130,31 @@ async function fazerLogin() {
   }
   if (nome_usuario.length < 3 || senha === '') return;
 
+  let dados;
+try {
   const resp = await fetch('/api/login', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ nome_usuario, senha }),
   });
-  const dados = await resp.json();
 
-  if (!resp.ok) {
-    $('erroLogin').textContent = dados.erro;
+  const texto = await resp.text();
+  try {
+    dados = JSON.parse(texto);
+  } catch {
+    console.error('Resposta não-JSON:', resp.status, texto.slice(0, 200));
+    $('erroLogin').textContent = `Erro ${resp.status} no servidor.`;
     return;
   }
+
+  if (!resp.ok) {
+    $('erroLogin').textContent = dados.erro || 'Erro ao fazer login.';
+    return;
+  }
+} catch (e) {
+  $('erroLogin').textContent = 'Não foi possível conectar ao servidor.';
+  return;
+}
 
   localStorage.setItem('token', dados.token);
   localStorage.setItem('usuario', JSON.stringify(dados.usuario));
