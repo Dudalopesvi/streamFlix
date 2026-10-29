@@ -216,11 +216,10 @@ app.get(/.*/, (req, res) => {
   });
 });
 
-// Executa localmente
-if (process.env.NODE_ENV !== 'production') {
-  app.listen(3000, () => console.log('Servidor rodando em http://localhost:3000'));
+// Executa localmente, sem iniciar outro servidor no Vercel
+if (require.main === module) {
+  app.listen(3000, () => {
+    console.log('Servidor rodando em http://localhost:3000');
+  });
 }
-
-module.exports = app;
-
 module.exports = app;
