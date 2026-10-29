@@ -57,17 +57,26 @@ function atualizarTela() {
 }
 
 // ---------------------------------------------------------------------------
+// LEITOR DE JSON
+// ---------------------------------------------------------------------------
+async function lerJson(resp) {
+  const texto = await resp.text();
+  try { return JSON.parse(texto); }
+  catch { return { erro: `Erro ${resp.status} no servidor.` }; }
+}
+
+
+// ---------------------------------------------------------------------------
 // GALERIA
 // ---------------------------------------------------------------------------
 async function carregarVitrine() {
   const url = '/api/filmes' + (filtroAdmin ? '?administrador=' + encodeURIComponent(filtroAdmin) : '');
   const resp = await api(url);
-  const filmes = await resp.json();
+  const filmes = await lerJson(resp);
 
   if (!resp.ok) return mensagem(filmes.erro);
   if (filmes.length === 0) return mensagem('Nenhum filme encontrado.');
-
-  $('vitrine').innerHTML = filmes
+    $('vitrine').innerHTML = filmes
     .map(
       (f) => `
       <div class="card">
