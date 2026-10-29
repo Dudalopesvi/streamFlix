@@ -47,24 +47,26 @@ function soAdmin(req, res, next) {
 }
 
 app.post('/api/login', async (req, res) => {
-  const { nome_usuario, senha } = req.body;
-  const r = await pool.query(
-    `SELECT id_usuario, nome, nome_usuario, email, imagem_usuario, tipo
-     FROM tb_usuario WHERE nome_usuario = $1 AND senha = $2`,
-    [nome_usuario, senha],
-  );
+  try {
+    const { nome_usuario, senha } = req.body;
+    const r = await pool.query(
+      `SELECT id_usuario, nome, nome_usuario, email, imagem_usuario, tipo
+       FROM tb_usuario WHERE nome_usuario = $1 AND senha = $2`,
+      [nome_usuario, senha],
+    );
 
-  if (r.rows.length === 0) {
-    return res
-      .status(401)
-      .json({ erro: 'Usuário não encontrado ou senha incorreta' });
+    if (r.rows.length === 0) {
+      return res.status(401).json({ erro: 'Usuário não encontrado ou senha incorreta' });
+    }
+
+    const token = crypto.randomBytes(16).toString('hex');
+    sessoes[token] = r.rows[0];
+    res.json({ token, usuario: r.rows[0] });
+  } catch (erro) {
+    console.error('Erro no login:', erro);
+    res.status(500).json({ erro: 'Erro interno no login' });
   }
-
-  const token = crypto.randomBytes(16).toString('hex');
-  sessoes[token] = r.rows[0];
-  res.json({ token, usuario: r.rows[0] });
 });
-
 // Todos os filmes, ou só os de um admin com ?administrador=curador1 (precisa logar)
 app.get('/api/filmes', async (req, res) => {
   try {
