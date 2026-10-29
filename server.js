@@ -191,10 +191,17 @@ app.get('/api/perfil', logado, async (req, res) => {
   });
 });
 
+// Servir arquivos estáticos da pasta public
+app.use(express.static(path.join(__dirname, 'public')));
+
+// Rota de fallback para entregar o index.html nas rotas do front
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
+
 // Executa localmente
 if (process.env.NODE_ENV !== 'production') {
   app.listen(3000, () => console.log('Servidor rodando em http://localhost:3000'));
 }
 
-// Exporta a aplicação para o Vercel
 module.exports = app;
